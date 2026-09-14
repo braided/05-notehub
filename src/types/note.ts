@@ -1,16 +1,23 @@
+export type NoteTag =
+  | "Todo"
+  | "Work"
+  | "Personal"
+  | "Meeting"
+  | "Shopping";
+
 export interface Note {
   id: string;
   title: string;
   content: string;
+  tag: NoteTag;
   createdAt: string;
   updatedAt: string;
-  tag: TagValue;
 }
-
-export type TagValue = "Todo" | "Work" | "Shopping" | "Meeting" | "Personal";
 
 export interface NoteValue {
   title: string;
   content: string;
-  tag: Note["tag"];
+  tag: NoteTag;
 }
+
+export type TagValue = NoteTag;

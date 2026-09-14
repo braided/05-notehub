@@ -22,8 +22,8 @@ export default function Pagination({
       marginPagesDisplayed={1}
       containerClassName={css.pagination}
       activeClassName={css.active}
-      previousLabel="&lt;"
-      nextLabel="&gt;"
+      previousLabel="<"
+      nextLabel=">"
     />
   );
 }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useDebouncedCallback } from "use-debounce";
 
 import { fetchNotes } from "../../services/noteService";
@@ -18,44 +18,51 @@ export default function App() {
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const handleSearch = useDebouncedCallback((value: string) => {
+    setSearch(value);
+    setPage(1);
+  }, 300);
+
   const { data, isLoading, isError } = useQuery({
     queryKey: ["notes", page, search],
     queryFn: () =>
       fetchNotes({
         page,
         perPage: PER_PAGE,
-        search,
+        search: search || undefined,
       }),
     placeholderData: keepPreviousData,
   });
 
-  const handleSearch = useDebouncedCallback((value: string) => {
-    setSearch(value);
-    setPage(1);
-  }, 300);
-
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div className={css.loader}>Loading...</div>;
   }
 
   if (isError) {
-    return <div>Something went wrong. Please try again.</div>;
+    return (
+      <div className={css.error}>
+        Something went wrong. Please try again.
+      </div>
+    );
   }
 
   return (
     <div className={css.app}>
       <header className={css.toolbar}>
-        <SearchBox onChange={handleSearch} />
+        <SearchBox value={search} onChange={handleSearch} />
 
         {data && data.totalPages > 1 && (
           <Pagination
             pageCount={data.totalPages}
             currentPage={page - 1}
-            onPageChange={(selectedPage) => setPage(selectedPage + 1)}
+            onPageChange={(selectedPage) => {
+              setPage(selectedPage + 1);
+            }}
           />
         )}
 
         <button
+          type="button"
           className={css.button}
           onClick={() => setIsModalOpen(true)}
         >
@@ -65,6 +72,10 @@ export default function App() {
 
       {data && data.notes.length > 0 && (
         <NoteList notes={data.notes} />
+      )}
+
+      {data && data.notes.length === 0 && (
+        <p className={css.empty}>No notes found.</p>
       )}
 
       {isModalOpen && (
