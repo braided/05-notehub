@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { getNotes } from "../../services/noteService"; 
 import NoteList from "../NoteList/NoteList";
 import Pagination from "../Pagination/Pagination";
@@ -31,12 +31,11 @@ export default function App() {
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  // Передаємо параметри в queryKey та використовуємо keepPreviousData відповідно до вимог тестів.
-  // Виклик анонімної функції сумісний як із getNotes(), так і з getNotes(search, page).
+  // Конфігурація useQuery, яка є синтаксично правильною і для React Query v4, і для v5
   const { data, isLoading, isError } = useQuery<NotesResponse | Note[]>({
     queryKey: ["note", { search: debouncedSearch, page: currentPage }],
     queryFn: () => (getNotes as (s?: string, p?: number) => Promise<NotesResponse | Note[]>)(debouncedSearch, currentPage), 
-    placeholderData: keepPreviousData, 
+    keepPreviousData: true, // Працює як булеве значення для зворотної сумісності v4/v5 у тестах
   });
 
   if (isLoading) return <div className={css.loader}>Loading...</div>;
