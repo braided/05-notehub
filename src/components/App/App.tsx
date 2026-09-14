@@ -14,8 +14,8 @@ export default function App() {
     queryFn: getNotes,
   });
 
-  if (isLoading) return <div className={css?.loader || ""}>Loading...</div>;
-  if (isError) return <div className={css?.error || ""}>Error loading notes.</div>;
+  if (isLoading) return <div className={css.loader}>Loading...</div>;
+  if (isError) return <div className={css.error}>Error loading notes.</div>;
 
   const totalPages = Math.ceil(notes.length / notesPerPage);
 
@@ -24,15 +24,15 @@ export default function App() {
   const currentNotes = notes.slice(indexOfFirstNote, indexOfLastNote);
 
   return (
-    <div className={css?.appContainer || ""}>
-      <header className={css?.header || ""}>
+    <div className={css.appContainer}>
+      <header className={css.header}>
         <h1>Notehub</h1>
       </header>
 
       <NoteList notes={currentNotes} />
 
       {totalPages > 1 && (
-        <div className={css?.paginationWrapper || ""}>
+        <div className={css.paginationWrapper}>
           <Pagination
             onPageChange={(pageIndex) => setCurrentPage(pageIndex)}
             forcePage={currentPage}
