@@ -16,13 +16,13 @@ const ReactPaginate = (
 
 interface PaginationProps {
   currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
+  pageCount: number;
+  onPageChange: (selectedPage: number) => void;
 }
 
 export default function Pagination({
   currentPage,
-  totalPages,
+  pageCount,
   onPageChange,
 }: PaginationProps) {
   const handlePageClick = ({
@@ -35,7 +35,7 @@ export default function Pagination({
 
   return (
     <ReactPaginate
-      pageCount={totalPages}
+      pageCount={pageCount}
       pageRangeDisplayed={5}
       marginPagesDisplayed={1}
       forcePage={currentPage - 1}
