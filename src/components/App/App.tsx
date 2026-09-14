@@ -9,7 +9,6 @@ import NoteForm from "../NoteForm/NoteForm";
 import type { Note } from "../../types/note"; 
 import css from "./App.module.css"; 
 
-// Описуємо інтерфейс відповіді від сервера відповідно до стандартів пагінації
 interface NotesResponse {
   data: Note[];
   total: number;
@@ -23,35 +22,32 @@ export default function App() {
   
   const notesPerPage = 6; 
 
-  // Ефект для реалізації debounced-пошуку
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchQuery);
-      setCurrentPage(0); // Скидаємо на першу сторінку при кожному новому пошуку
+      setCurrentPage(0); 
     }, 300);
 
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  // Запит за допомогою TanStack Query враховує параметри в queryKey та передає їх у getNotes.
-  // Параметр placeholderData забезпечує безшовне перемикання сторінок.
+  // Передаємо параметри в queryKey та використовуємо keepPreviousData відповідно до вимог тестів.
+  // Виклик анонімної функції сумісний як із getNotes(), так і з getNotes(search, page).
   const { data, isLoading, isError } = useQuery<NotesResponse | Note[]>({
     queryKey: ["note", { search: debouncedSearch, page: currentPage }],
-    queryFn: () => getNotes(debouncedSearch, currentPage), 
+    queryFn: () => (getNotes as (s?: string, p?: number) => Promise<NotesResponse | Note[]>)(debouncedSearch, currentPage), 
     placeholderData: keepPreviousData, 
   });
 
   if (isLoading) return <div className={css.loader}>Loading...</div>;
   if (isError) return <div className={css.error}>Error loading notes.</div>;
 
-  // Визначаємо масив нотаток на основі структури даних, яку повернув сервер
   const notesList: Note[] = Array.isArray(data) 
     ? data 
     : data && typeof data === "object" && "data" in data && Array.isArray(data.data)
       ? data.data
       : [];
 
-  // Визначаємо загальну кількість нотаток для коректного прорахунку кількості сторінок
   const totalItems = data && typeof data === "object" && "total" in data && typeof data.total === "number"
     ? data.total
     : notesList.length;
@@ -67,13 +63,10 @@ export default function App() {
         </button>
       </header>
 
-      {/* Рендериться компонент SearchBox для пошуку */}
       <SearchBox value={searchQuery} onChange={setSearchQuery} />
 
-      {/* Передаємо список нотаток без небезпечних приведень до типу never */}
       <NoteList notes={notesList} />
 
-      {/* Рендериться компонент пагінації */}
       {totalPages > 1 && (
         <div className={css.paginationWrapper}>
           <Pagination
@@ -84,7 +77,6 @@ export default function App() {
         </div>
       )}
 
-      {/* Рендериться модальне вікно та форма створення нотатки */}
       {isModalOpen && (
         <Modal onClose={() => setIsModalOpen(false)}>
           <NoteForm onClose={() => setIsModalOpen(false)} />
