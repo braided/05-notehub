@@ -6,10 +6,10 @@ import Pagination from "../Pagination/Pagination";
 import SearchBox from "../SearchBox/SearchBox"; 
 import Modal from "../Modal/Modal"; 
 import NoteForm from "../NoteForm/NoteForm"; 
-import type { Note } from "../../types/note"; // Глобальний тип Note (без локальних інтерфейсів)
+import type { Note } from "../../types/note"; 
 import css from "./App.module.css"; 
 
-// Описуємо структуру того, що повертає ваше API (масив нотаток та загальна кількість для розрахунку сторінок)
+// Описуємо інтерфейс відповіді від сервера відповідно до стандартів пагінації
 interface NotesResponse {
   data: Note[];
   total: number;
@@ -23,18 +23,18 @@ export default function App() {
   
   const notesPerPage = 6; 
 
-  // 1. Debounced-пошуковий запит (300мс)
+  // Ефект для реалізації debounced-пошуку
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchQuery);
-      setCurrentPage(0); // Скидаємо на першу сторінку при зміні пошукового запиту
+      setCurrentPage(0); // Скидаємо на першу сторінку при кожному новому пошуку
     }, 300);
 
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  // 2. Отримання даних за допомогою TanStack Query з урахуванням параметрів у queryKey та getNotes
-  // Властивість placeholderData забезпечує безшовну пагінацію без стрибків екрана
+  // Запит за допомогою TanStack Query враховує параметри в queryKey та передає їх у getNotes.
+  // Параметр placeholderData забезпечує безшовне перемикання сторінок.
   const { data, isLoading, isError } = useQuery<NotesResponse | Note[]>({
     queryKey: ["note", { search: debouncedSearch, page: currentPage }],
     queryFn: () => getNotes(debouncedSearch, currentPage), 
@@ -44,14 +44,14 @@ export default function App() {
   if (isLoading) return <div className={css.loader}>Loading...</div>;
   if (isError) return <div className={css.error}>Error loading notes.</div>;
 
-  // 3. Безпечно витягуємо чистий масив Note[] залежно від структури відповіді вашого API
+  // Визначаємо масив нотаток на основі структури даних, яку повернув сервер
   const notesList: Note[] = Array.isArray(data) 
     ? data 
     : data && typeof data === "object" && "data" in data && Array.isArray(data.data)
       ? data.data
       : [];
 
-  // 4. Отримуємо загальну кількість елементів із сервера або за довжиною масиву
+  // Визначаємо загальну кількість нотаток для коректного прорахунку кількості сторінок
   const totalItems = data && typeof data === "object" && "total" in data && typeof data.total === "number"
     ? data.total
     : notesList.length;
@@ -70,7 +70,7 @@ export default function App() {
       {/* Рендериться компонент SearchBox для пошуку */}
       <SearchBox value={searchQuery} onChange={setSearchQuery} />
 
-      {/* Передаємо нотатки без жодних приведень до types/never */}
+      {/* Передаємо список нотаток без небезпечних приведень до типу never */}
       <NoteList notes={notesList} />
 
       {/* Рендериться компонент пагінації */}
@@ -84,7 +84,7 @@ export default function App() {
         </div>
       )}
 
-      {/* Рендериться компонент Modal та NoteForm */}
+      {/* Рендериться модальне вікно та форма створення нотатки */}
       {isModalOpen && (
         <Modal onClose={() => setIsModalOpen(false)}>
           <NoteForm onClose={() => setIsModalOpen(false)} />
