@@ -4,6 +4,7 @@ import type { ComponentType } from "react";
 
 type ModuleWithDefault<T> = { default: T };
 
+// Коректний імпорт для сумісності з Vite 8.x.x
 const ReactPaginate = (
   ReactPaginateModule as unknown as ModuleWithDefault<
     ComponentType<ReactPaginateProps>
@@ -25,7 +26,8 @@ export default function Pagination({
     <ReactPaginate
       onPageChange={({ selected }) => onPageChange(selected)}
       forcePage={forcePage}
-      pageRangeDisplayed={pageCount}
+      pageRangeDisplayed={3} // Кількість видимих кнопок сторінок по центру
+      marginPagesDisplayed={1} // Кількість видимих сторінок на початку і в кінці
       pageCount={pageCount}
       containerClassName={css.pagination}
       activeClassName={css.active}
