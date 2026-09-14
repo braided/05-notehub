@@ -1,18 +1,51 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useEffect, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
+import css from './Modal.module.css';
 
-import "modern-normalize";
-import "./index.css";
+interface ModalProps {
+  children: ReactNode;
+  onClose: () => void;
+}
 
-import App from "./components/App/App";
+export default function Modal({ children, onClose }: ModalProps) {
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
 
-const queryClient = new QueryClient();
+    document.addEventListener('keydown', handleKeyDown);
 
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <App />
-    </QueryClientProvider>
-  </StrictMode>,
-);
+    // Забороняємо прокручування сторінки,
+    // поки модальне вікно відкрите
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+
+      // Повертаємо прокручування після закриття модалки
+      document.body.style.overflow = '';
+    };
+  }, [onClose]);
+
+  const handleBackdropClick = (
+    event: React.MouseEvent<HTMLDivElement>
+  ) => {
+    if (event.target === event.currentTarget) {
+      onClose();
+    }
+  };
+
+  return createPortal(
+    <div
+      className={css.backdrop}
+      role="dialog"
+      aria-modal="true"
+      onClick={handleBackdropClick}
+    >
+      <div className={css.modal}>{children}</div>
+    </div>,
+    document.body
+  );
+}
